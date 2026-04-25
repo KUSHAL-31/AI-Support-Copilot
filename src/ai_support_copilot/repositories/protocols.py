@@ -1,0 +1,59 @@
+from typing import Protocol
+from uuid import UUID
+
+from ai_support_copilot.domain.models import (
+    Conversation,
+    ConversationMessage,
+    Document,
+    DocumentChunk,
+    IngestionJob,
+    IngestionJobStatus,
+    IngestionStatus,
+    User,
+)
+
+
+class UserRepositoryProtocol(Protocol):
+    async def create(self, user: User) -> User: ...
+
+    async def get_by_email(self, email: str) -> User | None: ...
+
+    async def get_by_id(self, user_id: UUID) -> User | None: ...
+
+
+class DocumentRepositoryProtocol(Protocol):
+    async def find_by_hash(self, tenant_id: str, content_hash: str) -> Document | None: ...
+
+    async def save_document(self, document: Document) -> Document: ...
+
+    async def update_status(
+        self, document_id: UUID, status: IngestionStatus, error: str | None = None
+    ) -> None: ...
+
+    async def save_chunks(self, chunks: list[DocumentChunk]) -> None: ...
+
+    async def list_chunks(self, tenant_id: str) -> list[DocumentChunk]: ...
+
+    async def get_document(self, document_id: UUID) -> Document | None: ...
+
+    async def delete_document(self, tenant_id: str, document_id: UUID) -> None: ...
+
+
+class ConversationRepositoryProtocol(Protocol):
+    async def get_or_create(self, tenant_id: str, conversation_id: UUID | None) -> Conversation: ...
+
+    async def append(self, message: ConversationMessage) -> None: ...
+
+    async def get(self, tenant_id: str, conversation_id: UUID) -> Conversation | None: ...
+
+
+class IngestionJobRepositoryProtocol(Protocol):
+    async def enqueue(self, job: IngestionJob) -> IngestionJob: ...
+
+    async def get(self, tenant_id: str, job_id: UUID) -> IngestionJob | None: ...
+
+    async def claim_next(self) -> IngestionJob | None: ...
+
+    async def complete(self, job_id: UUID, document_id: UUID, chunks_indexed: int) -> None: ...
+
+    async def fail(self, job_id: UUID, error: str, status: IngestionJobStatus) -> None: ...
