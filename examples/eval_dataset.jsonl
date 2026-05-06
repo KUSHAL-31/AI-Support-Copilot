@@ -1,0 +1,2 @@
+{"tenant_id":"acme","question":"Why are enterprise card payments failing?","expected_contains":"card"}
+{"tenant_id":"acme","question":"How do we rotate API keys?","expected_contains":"key"}
