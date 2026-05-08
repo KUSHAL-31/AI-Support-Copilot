@@ -27,10 +27,10 @@ The local stack is configured for:
 - Durable Postgres-backed ingestion queue with worker processing
 
 Provider abstractions exist for swapping LLM, embedding, reranker, and vector database layers. Qdrant,
-Ollama, local embeddings, fake LLM, OpenAI-compatible chat providers, Postgres repositories, Qdrant,
-and the in-memory test vector store are implemented. Pinecone, Weaviate, Chroma, pgvector,
-Anthropic-native chat, and managed embedding providers are currently documented extension points unless
-their adapters are added.
+Ollama, local embeddings, fake LLM, OpenAI-compatible chat providers, Anthropic models through an
+OpenAI-compatible gateway, Postgres repositories, and the in-memory test vector store are implemented.
+Pinecone, Weaviate, Chroma, pgvector, and managed embedding providers can be added through the same
+adapter boundaries.
 
 ## 2. Install Prerequisites
 
@@ -62,9 +62,9 @@ cp .env.example .env
 For a fully local Docker setup, keep:
 
 ```bash
-DEFAULT_LLM_PROVIDER=ollama
-DEFAULT_EMBEDDING_PROVIDER=local
-DEFAULT_VECTORSTORE=qdrant
+LLM_PROVIDER=ollama
+EMBEDDING_PROVIDER=local
+VECTOR_STORE_PROVIDER=qdrant
 OLLAMA_BASE_URL=http://ollama:11434
 QDRANT_URL=http://qdrant:6333
 ```
@@ -118,12 +118,12 @@ ollama pull nomic-embed-text
 ollama serve
 ```
 
-The current app uses Ollama for chat when `DEFAULT_LLM_PROVIDER=ollama`. Embeddings default to the
+The current app uses Ollama for chat when `LLM_PROVIDER=ollama`. Embeddings default to the
 offline local embedding provider so you can test without model latency. To use Ollama embeddings,
 set:
 
 ```bash
-DEFAULT_EMBEDDING_PROVIDER=ollama
+EMBEDDING_PROVIDER=ollama
 ```
 
 ## 6. Install Python Dependencies for Local Development
@@ -284,8 +284,9 @@ OPENAI_API_KEY=
 OPENAI_CHAT_MODEL=gpt-4o-mini
 OPENAI_EMBED_MODEL=text-embedding-3-small
 
-ANTHROPIC_API_KEY=
-ANTHROPIC_CHAT_MODEL=claude-3-5-sonnet-latest
+ANTHROPIC_OPENAI_API_KEY=
+ANTHROPIC_OPENAI_BASE_URL=https://openrouter.ai/api/v1
+ANTHROPIC_CHAT_MODEL=anthropic/claude-3.5-sonnet
 
 OPENROUTER_API_KEY=
 OPENROUTER_CHAT_MODEL=openai/gpt-4o-mini
@@ -310,7 +311,7 @@ Current provider status:
 | OpenAI chat | Yes | Implemented via OpenAI-compatible endpoint |
 | OpenRouter chat | Yes | Implemented via OpenAI-compatible endpoint |
 | Groq chat | Yes | Implemented via OpenAI-compatible endpoint |
-| Anthropic chat | Yes | Extension point |
+| Anthropic chat | Yes | Implemented through OpenAI-compatible gateway |
 | OpenAI embeddings | Yes | Extension point |
 | Qdrant | Yes | Implemented |
 | In-memory vector store | No key needed | Implemented for tests/dev |
@@ -320,8 +321,7 @@ Current provider status:
 | Weaviate | Yes | Extension point |
 | Chroma | Host/port present | Extension point |
 
-For a resume project, this now has real persistence in the core backend path. Before production, add
-Alembic migrations and any managed provider adapters you plan to advertise as production-ready.
+Before production, add any managed provider adapters you plan to advertise as production-ready.
 
 ## 12. Recommended Local Testing Matrix
 
@@ -329,19 +329,19 @@ Run these combinations:
 
 ```bash
 # Fast, no external model
-DEFAULT_LLM_PROVIDER=fake
-DEFAULT_EMBEDDING_PROVIDER=local
-DEFAULT_VECTORSTORE=memory
+LLM_PROVIDER=fake
+EMBEDDING_PROVIDER=local
+VECTOR_STORE_PROVIDER=memory
 
 # Local RAG with Qdrant, no hosted API keys
-DEFAULT_LLM_PROVIDER=ollama
-DEFAULT_EMBEDDING_PROVIDER=local
-DEFAULT_VECTORSTORE=qdrant
+LLM_PROVIDER=ollama
+EMBEDDING_PROVIDER=local
+VECTOR_STORE_PROVIDER=qdrant
 
 # Fully local model stack
-DEFAULT_LLM_PROVIDER=ollama
-DEFAULT_EMBEDDING_PROVIDER=ollama
-DEFAULT_VECTORSTORE=qdrant
+LLM_PROVIDER=ollama
+EMBEDDING_PROVIDER=ollama
+VECTOR_STORE_PROVIDER=qdrant
 ```
 
 After each change:

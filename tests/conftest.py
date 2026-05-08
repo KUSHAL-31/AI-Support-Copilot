@@ -8,9 +8,9 @@ from ai_support_copilot.core.config import Settings
 async def isolated_container(tmp_path):
     settings = Settings(
         postgres_dsn=f"sqlite+aiosqlite:///{tmp_path / 'test.db'}",
-        default_llm_provider="fake",
-        default_embedding_provider="local",
-        default_vectorstore="memory",
+        llm_provider="fake",
+        embedding_provider="local",
+        vector_store_provider="memory",
         auth_jwt_secret="test-secret",
     )
     container = Container(settings)

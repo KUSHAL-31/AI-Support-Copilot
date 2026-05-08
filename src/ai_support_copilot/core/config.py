@@ -1,12 +1,17 @@
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import Field, SecretStr
+from pydantic import AliasChoices, Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+        populate_by_name=True,
+    )
 
     app_name: str = "Enterprise AI Support Copilot"
     app_env: str = "local"
@@ -19,15 +24,26 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379/0"
     qdrant_url: str = "http://localhost:6333"
 
-    default_llm_provider: Literal["ollama", "openai", "anthropic", "openrouter", "groq", "fake"] = (
-        "fake"
+    llm_provider: Literal["ollama", "openai", "anthropic", "openrouter", "groq", "fake"] = Field(
+        default="fake",
+        validation_alias=AliasChoices("LLM_PROVIDER", "DEFAULT_LLM_PROVIDER", "llm_provider"),
     )
-    default_embedding_provider: Literal[
+    embedding_provider: Literal[
         "ollama", "openai", "huggingface", "sentence_transformers", "local"
-    ] = "local"
-    default_vectorstore: Literal[
+    ] = Field(
+        default="local",
+        validation_alias=AliasChoices(
+            "EMBEDDING_PROVIDER", "DEFAULT_EMBEDDING_PROVIDER", "embedding_provider"
+        ),
+    )
+    vector_store_provider: Literal[
         "qdrant", "pgvector", "pinecone", "weaviate", "chroma", "memory"
-    ] = "memory"
+    ] = Field(
+        default="memory",
+        validation_alias=AliasChoices(
+            "VECTOR_STORE_PROVIDER", "DEFAULT_VECTORSTORE", "vector_store_provider"
+        ),
+    )
 
     ollama_base_url: str = "http://localhost:11434"
     ollama_chat_model: str = "llama3.1"
@@ -35,8 +51,14 @@ class Settings(BaseSettings):
     openai_api_key: SecretStr | None = None
     openai_chat_model: str = "gpt-4o-mini"
     openai_embed_model: str = "text-embedding-3-small"
-    anthropic_api_key: SecretStr | None = None
-    anthropic_chat_model: str = "claude-3-5-sonnet-latest"
+    anthropic_openai_api_key: SecretStr | None = Field(
+        default=None,
+        validation_alias=AliasChoices(
+            "ANTHROPIC_OPENAI_API_KEY", "ANTHROPIC_API_KEY", "anthropic_openai_api_key"
+        ),
+    )
+    anthropic_openai_base_url: str = "https://openrouter.ai/api/v1"
+    anthropic_chat_model: str = "anthropic/claude-3.5-sonnet"
     openrouter_api_key: SecretStr | None = None
     openrouter_chat_model: str = "openai/gpt-4o-mini"
     groq_api_key: SecretStr | None = None

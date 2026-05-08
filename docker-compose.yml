@@ -4,9 +4,9 @@ services:
     command: pdm run dev
     env_file: .env.example
     environment:
-      DEFAULT_LLM_PROVIDER: fake
-      DEFAULT_EMBEDDING_PROVIDER: local
-      DEFAULT_VECTORSTORE: qdrant
+      LLM_PROVIDER: fake
+      EMBEDDING_PROVIDER: local
+      VECTOR_STORE_PROVIDER: qdrant
     ports:
       - "8000:8000"
     depends_on:
@@ -19,9 +19,9 @@ services:
     command: pdm run worker
     env_file: .env.example
     environment:
-      DEFAULT_LLM_PROVIDER: fake
-      DEFAULT_EMBEDDING_PROVIDER: local
-      DEFAULT_VECTORSTORE: qdrant
+      LLM_PROVIDER: fake
+      EMBEDDING_PROVIDER: local
+      VECTOR_STORE_PROVIDER: qdrant
     depends_on:
       - api
       - redis

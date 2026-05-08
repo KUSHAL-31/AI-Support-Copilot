@@ -318,25 +318,34 @@ curl -s -X POST http://localhost:8000/query \
 Fast local development:
 
 ```bash
-DEFAULT_LLM_PROVIDER=fake
-DEFAULT_EMBEDDING_PROVIDER=local
-DEFAULT_VECTORSTORE=memory
+LLM_PROVIDER=fake
+EMBEDDING_PROVIDER=local
+VECTOR_STORE_PROVIDER=memory
 ```
 
 Local RAG with Qdrant:
 
 ```bash
-DEFAULT_LLM_PROVIDER=ollama
-DEFAULT_EMBEDDING_PROVIDER=local
-DEFAULT_VECTORSTORE=qdrant
+LLM_PROVIDER=ollama
+EMBEDDING_PROVIDER=local
+VECTOR_STORE_PROVIDER=qdrant
 ```
 
 Fully local model path:
 
 ```bash
-DEFAULT_LLM_PROVIDER=ollama
-DEFAULT_EMBEDDING_PROVIDER=ollama
-DEFAULT_VECTORSTORE=qdrant
+LLM_PROVIDER=ollama
+EMBEDDING_PROVIDER=ollama
+VECTOR_STORE_PROVIDER=qdrant
+```
+
+Anthropic model through an OpenAI-compatible gateway:
+
+```bash
+LLM_PROVIDER=anthropic
+ANTHROPIC_OPENAI_BASE_URL=https://openrouter.ai/api/v1
+ANTHROPIC_OPENAI_API_KEY=<gateway-api-key>
+ANTHROPIC_CHAT_MODEL=anthropic/claude-3.5-sonnet
 ```
 
 ## Configuration
@@ -355,29 +364,20 @@ Important variables:
 | `QDRANT_URL` | Vector database endpoint |
 | `REDIS_URL` | Redis endpoint for cache-ready infrastructure |
 | `AUTH_JWT_SECRET` | JWT signing secret |
-| `DEFAULT_LLM_PROVIDER` | `fake`, `ollama`, `openai`, `openrouter`, `groq` |
-| `DEFAULT_EMBEDDING_PROVIDER` | `local`, `ollama`, extension providers |
-| `DEFAULT_VECTORSTORE` | `memory`, `qdrant`, extension stores |
+| `LLM_PROVIDER` | `fake`, `ollama`, `openai`, `anthropic`, `openrouter`, `groq` |
+| `EMBEDDING_PROVIDER` | `local`, `ollama`, extension providers |
+| `VECTOR_STORE_PROVIDER` | `memory`, `qdrant`, extension stores |
 | `CONFIDENCE_THRESHOLD` | Minimum confidence before fallback |
 | `AUTO_RUN_MIGRATIONS` | Run Alembic migrations on app startup |
 
-## Provider Status
+## Provider Support
 
-| Provider / Component | Status |
-| --- | --- |
-| Ollama chat | Implemented |
-| Ollama embeddings | Implemented |
-| Fake local LLM | Implemented |
-| Local deterministic embeddings | Implemented |
-| OpenAI-compatible chat | Implemented |
-| OpenRouter chat | Implemented through OpenAI-compatible API |
-| Groq chat | Implemented through OpenAI-compatible API |
-| Qdrant vector store | Implemented |
-| In-memory vector store | Implemented for tests/local development |
-| Postgres repositories | Implemented |
-| Anthropic-native adapter | Extension point |
-| OpenAI embeddings adapter | Extension point |
-| Pinecone / Weaviate / Chroma / pgvector | Extension points |
+The implemented local path supports Ollama chat, Ollama embeddings, deterministic local embeddings,
+Qdrant vector search, an in-memory vector store for tests, and Postgres-backed repositories.
+OpenAI-compatible chat providers are also supported, including OpenAI-style APIs, OpenRouter, Groq,
+and Anthropic models served through an OpenAI-compatible gateway such as OpenRouter or LiteLLM. The
+vector database layer is intentionally abstracted so additional adapters can be added without changing
+ingestion or query orchestration.
 
 ## Testing and Quality
 
@@ -433,19 +433,6 @@ docs/                  architecture and setup guides
 tests/                 API and unit tests
 ```
 
-## Resume Positioning
-
-This project demonstrates:
-
-- Backend system design beyond CRUD APIs.
-- Practical AI engineering with retrieval quality controls.
-- Secure multi-tenant architecture.
-- Durable async processing.
-- Database schema management through migrations.
-- Provider abstraction and clean architecture.
-- Observability-first API design.
-- Honest production tradeoff thinking.
-
 ## Production Hardening Roadmap
 
 High-value next steps:
@@ -458,8 +445,3 @@ High-value next steps:
 - Add load tests and ingestion benchmarks.
 - Add object storage for large uploaded source files instead of storing file payloads in Postgres.
 - Add admin APIs for tenants, users, document lifecycle, and ingestion job management.
-
-## Additional Documentation
-
-- [Architecture](docs/architecture.md)
-- [Local setup and end-to-end guide](docs/setup_guide.md)

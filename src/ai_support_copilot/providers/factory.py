@@ -18,40 +18,47 @@ from ai_support_copilot.providers.vectorstores.qdrant import QdrantVectorStore
 
 
 def build_llm_provider(settings: Settings) -> LLMProvider:
-    if settings.default_llm_provider == "ollama":
+    if settings.llm_provider == "ollama":
         return OllamaLLMProvider(settings)
-    if settings.default_llm_provider == "openai" and settings.openai_api_key:
+    if settings.llm_provider == "openai" and settings.openai_api_key:
         return OpenAICompatibleLLMProvider(
             "openai",
             "https://api.openai.com/v1",
             settings.openai_api_key.get_secret_value(),
-            "gpt-4o-mini",
+            settings.openai_chat_model,
         )
-    if settings.default_llm_provider == "openrouter" and settings.openrouter_api_key:
+    if settings.llm_provider == "anthropic" and settings.anthropic_openai_api_key:
+        return OpenAICompatibleLLMProvider(
+            "anthropic",
+            settings.anthropic_openai_base_url,
+            settings.anthropic_openai_api_key.get_secret_value(),
+            settings.anthropic_chat_model,
+        )
+    if settings.llm_provider == "openrouter" and settings.openrouter_api_key:
         return OpenAICompatibleLLMProvider(
             "openrouter",
             "https://openrouter.ai/api/v1",
             settings.openrouter_api_key.get_secret_value(),
-            "openai/gpt-4o-mini",
+            settings.openrouter_chat_model,
         )
-    if settings.default_llm_provider == "groq" and settings.groq_api_key:
+    if settings.llm_provider == "groq" and settings.groq_api_key:
         return OpenAICompatibleLLMProvider(
             "groq",
             "https://api.groq.com/openai/v1",
             settings.groq_api_key.get_secret_value(),
-            "llama-3.1-70b-versatile",
+            settings.groq_chat_model,
         )
     return FakeLLMProvider()
 
 
 def build_embedding_provider(settings: Settings) -> EmbeddingProvider:
-    if settings.default_embedding_provider == "ollama":
+    if settings.embedding_provider == "ollama":
         return OllamaEmbeddingProvider(settings)
     return HashEmbeddingProvider()
 
 
 def build_vector_store(settings: Settings) -> VectorStore:
-    if settings.default_vectorstore == "qdrant":
+    if settings.vector_store_provider == "qdrant":
         return QdrantVectorStore(settings.qdrant_url)
     return InMemoryVectorStore()
 
