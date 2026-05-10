@@ -48,7 +48,7 @@ This codebase implements those concerns as separate, extensible backend layers.
 | Vector database | Qdrant |
 | Cache service | Redis-ready architecture |
 | Local LLM | Ollama |
-| LLM providers | Ollama, OpenAI-compatible providers, OpenRouter, Groq |
+| LLM providers | Ollama, OpenAI-compatible providers, OpenRouter, Groq, Anthropic via gateway |
 | Embeddings | Local deterministic embeddings, Ollama embeddings |
 | Observability | Prometheus metrics, Grafana/Prometheus Compose stack |
 | Testing | pytest, pytest-asyncio |
@@ -258,6 +258,23 @@ Start the full local stack:
 docker compose up --build
 ```
 
+The default Docker setup expects Ollama to run on your host machine, not as a Compose service:
+
+```bash
+ollama pull llama3.1
+ollama pull nomic-embed-text
+ollama serve
+```
+
+The API and worker reach it through:
+
+```env
+OLLAMA_BASE_URL=http://host.docker.internal:11434
+```
+
+Postgres is exposed to the host on `localhost:55432` to avoid conflicts with local Postgres, while
+containers still use `postgres:5432` internally.
+
 Run migrations manually if needed:
 
 ```bash
@@ -363,6 +380,7 @@ Important variables:
 | `POSTGRES_DSN` | SQLAlchemy async Postgres connection string |
 | `QDRANT_URL` | Vector database endpoint |
 | `REDIS_URL` | Redis endpoint for cache-ready infrastructure |
+| `OLLAMA_BASE_URL` | Ollama endpoint; use `host.docker.internal:11434` for Docker API to host Ollama |
 | `AUTH_JWT_SECRET` | JWT signing secret |
 | `LLM_PROVIDER` | `fake`, `ollama`, `openai`, `anthropic`, `openrouter`, `groq` |
 | `EMBEDDING_PROVIDER` | `local`, `ollama`, extension providers |
