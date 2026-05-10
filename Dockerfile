@@ -7,10 +7,12 @@ ENV PDM_CHECK_UPDATE=false \
 
 WORKDIR /app
 
-RUN pip install --no-cache-dir pdm==2.15.4
+RUN pip install --no-cache-dir pdm==2.26.8
 
-COPY pyproject.toml README.md ./
+COPY pyproject.toml pdm.lock README.md ./
 COPY src ./src
+COPY alembic.ini ./alembic.ini
+COPY alembic ./alembic
 
 RUN pdm install --prod --no-editable
 
