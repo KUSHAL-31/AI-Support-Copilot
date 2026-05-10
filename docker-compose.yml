@@ -4,9 +4,9 @@ services:
     command: pdm run dev
     env_file: .env.example
     environment:
-      LLM_PROVIDER: fake
-      EMBEDDING_PROVIDER: local
-      VECTOR_STORE_PROVIDER: qdrant
+      LLM_PROVIDER: ${LLM_PROVIDER:-ollama}
+      EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-local}
+      VECTOR_STORE_PROVIDER: ${VECTOR_STORE_PROVIDER:-qdrant}
     ports:
       - "8000:8000"
     depends_on:
@@ -19,9 +19,9 @@ services:
     command: pdm run worker
     env_file: .env.example
     environment:
-      LLM_PROVIDER: fake
-      EMBEDDING_PROVIDER: local
-      VECTOR_STORE_PROVIDER: qdrant
+      LLM_PROVIDER: ${LLM_PROVIDER:-ollama}
+      EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-local}
+      VECTOR_STORE_PROVIDER: ${VECTOR_STORE_PROVIDER:-qdrant}
     depends_on:
       - api
       - redis
@@ -34,7 +34,7 @@ services:
       POSTGRES_PASSWORD: copilot
       POSTGRES_DB: copilot
     ports:
-      - "5432:5432"
+      - "55432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
@@ -44,19 +44,29 @@ services:
       - "6379:6379"
 
   qdrant:
-    image: qdrant/qdrant:v1.9.2
+    image: qdrant/qdrant:v1.17.1
     ports:
       - "6333:6333"
       - "6334:6334"
     volumes:
       - qdrant_data:/qdrant/storage
 
-  ollama:
-    image: ollama/ollama:latest
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama_data:/root/.ollama
+  # Ollama is intentionally not started by Compose in the default local setup.
+  # Run Ollama on the host instead:
+  #   ollama pull llama3.1
+  #   ollama pull nomic-embed-text
+  #   ollama serve
+  #
+  # Then set:
+  #   OLLAMA_BASE_URL=http://host.docker.internal:11434
+  #
+  # Uncomment this service only if you want Ollama to run inside Docker.
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ollama_data:/root/.ollama
 
   prometheus:
     image: prom/prometheus:v2.52.0
@@ -77,4 +87,4 @@ services:
 volumes:
   postgres_data:
   qdrant_data:
-  ollama_data:
+  # ollama_data:
