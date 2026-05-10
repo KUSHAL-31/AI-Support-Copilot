@@ -55,9 +55,9 @@ class QdrantVectorStore:
         conditions = [FieldCondition(key="tenant_id", match=MatchValue(value=tenant_id))]
         for key, value in (filters or {}).items():
             conditions.append(FieldCondition(key=f"metadata.{key}", match=MatchValue(value=value)))
-        results = await self._client.search(
+        response = await self._client.query_points(
             collection_name=self._collection,
-            query_vector=list(embedding),
+            query=list(embedding),
             query_filter=Filter(must=conditions),
             limit=top_k,
         )
@@ -67,7 +67,7 @@ class QdrantVectorStore:
                 score=float(result.score),
                 source="vector",
             )
-            for result in results
+            for result in response.points
             if result.payload
         ]
 
